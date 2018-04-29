@@ -43,6 +43,10 @@
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
 #endif
 
+#ifndef PATH_MAX
+#define PATH_MAX 4096			// Hurd doesn't define this
+#endif
+
 extern int verbose, optimize_level, optimize_size, preprocessing;
 extern int die_if_error;
 extern int repeat_phase;
