@@ -9,7 +9,6 @@ static void test(void) {
 /*
  * check-name: variadic formatting test with bad formatting parameters
  * check-command: sparse -Wformat $file
- * check-known-to-fail
  *
  * check-error-start
 varargs-format-bad.c:2:73: warning: bad format positions

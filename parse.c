@@ -85,7 +85,7 @@ static attr_t
 	attribute_address_space, attribute_context,
 	attribute_designated_init,
 	attribute_transparent_union, ignore_attribute,
-	attribute_mode, attribute_force;
+	attribute_mode, attribute_force, attribute_format;
 
 typedef struct symbol *to_mode_t(struct symbol *);
 
@@ -377,6 +377,10 @@ static struct symbol_op attr_force_op = {
 	.attribute = attribute_force,
 };
 
+static struct symbol_op attr_format_op = {
+	.attribute = attribute_format,
+};
+
 static struct symbol_op address_space_op = {
 	.attribute = attribute_address_space,
 };
@@ -434,6 +438,16 @@ static struct symbol_op mode_pointer_op = {
 static struct symbol_op mode_word_op = {
 	.type = KW_MODE,
 	.to_mode = to_word_mode
+};
+
+static struct symbol_op attr_printf_op = {
+	.type	= KW_FORMAT,
+	.class	= FMT_PRINTF,
+};
+
+static struct symbol_op attr_scanf_op = {
+	.type	= KW_FORMAT,
+	.class	= FMT_SCANF,
 };
 
 /*
@@ -551,6 +565,9 @@ static struct init_keyword {
 	D("pure",		&attr_fun_op,		.mods = MOD_PURE),
 	A("const",		&attr_fun_op,		.mods = MOD_PURE),
 	D("gnu_inline",		&attr_fun_op,		.mods = MOD_GNU_INLINE),
+	D("format",		&attr_format_op),
+	D("printf",		&attr_printf_op),
+	D("scanf",		&attr_scanf_op),
 
 	/* Modes */
 	D("mode",		&mode_op),
@@ -1185,6 +1202,60 @@ static struct token *attribute_address_space(struct token *token, struct symbol 
 		ctx->ctype.as = as;
 	}
 	token = expect(next, ')', "after address_space attribute");
+	return token;
+}
+
+static int invalid_format_args(long long start, long long at)
+{
+	return start < 0 || at < 0 || start > USHRT_MAX || at > USHRT_MAX ||
+		(start == at && start > 0) ||
+		(start == 0 && at == 0);
+}
+
+static struct token *attribute_format(struct token *token, struct symbol *attr, struct decl_state *ctx)
+{
+	struct expression *args[3];
+	int type = FMT_UNKNOWN;
+
+	/* expecting format ( type, start, va_args at) */
+
+	token = expect(token, '(', "after format attribute");
+	if (token_type(token) != TOKEN_IDENT) {
+		sparse_error(token->pos, "identifier expected for format type");
+	} else {
+		struct symbol *sym = lookup_keyword(token->ident, NS_KEYWORD);
+		if (sym && sym->op && sym->op->type == KW_FORMAT)
+			type = sym->op->class;
+	}
+	token = conditional_expression(token, &args[0]);
+	token = expect(token, ',', "format attribute type");
+	token = conditional_expression(token, &args[1]);
+	token = expect(token, ',', "format attribute type position");
+	token = conditional_expression(token, &args[2]);
+	token = expect(token, ')', "format attribute arg position");
+
+	if (!args[0] || !args[1] || !args[2]) {
+		// incorrect format attribute
+	} else if (type != FMT_PRINTF) {
+		// only printf-style is supported, skip anything else
+	} else {
+		long long start, at;
+
+		start = get_expression_value(args[2]);
+		at = get_expression_value(args[1]);
+
+		if (invalid_format_args(start, at)) {
+			warning(token->pos, "bad format positions");
+		} else if (start == 0) {
+			/* nothing to do here, is va_list function */
+		} else if (start < at) {
+			warning(token->pos, "format cannot be after va_args");
+		} else {
+			ctx->ctype.format.index = at;
+			ctx->ctype.format.first = start;
+		}
+	}
+
 	return token;
 }
 
@@ -2957,6 +3028,8 @@ struct token *external_declaration(struct token *token, struct symbol_list **lis
 
 		if (!(decl->ctype.modifiers & MOD_STATIC))
 			decl->ctype.modifiers |= MOD_EXTERN;
+
+		base_type->ctype.format = decl->ctype.format;
 	} else if (base_type == &void_ctype && !(decl->ctype.modifiers & MOD_EXTERN)) {
 		sparse_error(token->pos, "void declaration");
 	}

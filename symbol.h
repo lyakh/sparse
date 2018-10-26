@@ -82,8 +82,8 @@ enum keyword {
 	KW_ASM		= 1 << 5,
 	KW_MODE		= 1 << 6,
 	KW_STATIC	= 1 << 7,
-     // KW UNUSED	= 1 << 8,
-	KW_EXACT	= 1 << 9,
+	KW_EXACT	= 1 << 8,
+	KW_FORMAT	= 1 << 9,
 };
 
 struct context {
@@ -95,12 +95,25 @@ extern struct context *alloc_context(void);
 
 DECLARE_PTR_LIST(context_list, struct context);
 
+/* the types of formatting from __attribute__((format)) */
+enum {
+	FMT_UNKNOWN,
+	FMT_PRINTF,
+	FMT_SCANF,
+};
+
+struct attr_format {
+	unsigned short index;	/* index in argument list for format string */
+	unsigned short first;	/* where first variadic argument is */
+};
+
 struct ctype {
 	struct symbol *base_type;
 	unsigned long modifiers;
 	unsigned long alignment;
 	struct context_list *contexts;
 	struct ident *as;
+	struct attr_format format;
 };
 
 struct decl_state {
