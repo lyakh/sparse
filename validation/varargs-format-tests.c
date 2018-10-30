@@ -46,7 +46,6 @@ static void test4(int i, unsigned int u)
 /*
  * check-name: variadic formatting tests for width/precisions
  * check-command: sparse -Wformat $file
- * check-known-to-fail
  *
  * check-error-start
 varargs-format-tests.c:10:12: warning: cannot evaluate type '%3$*2$-d'

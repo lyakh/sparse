@@ -90,6 +90,7 @@ LIB_OBJS += target-xtensa.o
 LIB_OBJS += tokenize.o
 LIB_OBJS += unssa.o
 LIB_OBJS += utils.o
+LIB_OBJS += verify-format.o
 
 PROGRAMS :=
 PROGRAMS += compile

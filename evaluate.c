@@ -42,6 +42,7 @@
 #include "symbol.h"
 #include "target.h"
 #include "expression.h"
+#include "verify-format.h"
 
 struct symbol *current_fn;
 
@@ -1411,8 +1412,8 @@ static int whitelist_pointers(struct symbol *t1, struct symbol *t2)
 	return !Wtypesign;
 }
 
-static int check_assignment_types(struct symbol *target, struct expression **rp,
-	const char **typediff)
+int check_assignment_types(struct symbol *target, struct expression **rp,
+			   const char **typediff)
 {
 	struct symbol *source = degenerate(*rp);
 	struct symbol *t, *s;
@@ -2344,7 +2345,8 @@ static struct symbol *evaluate_alignof(struct expression *expr)
 	return size_t_ctype;
 }
 
-int evaluate_arguments(struct symbol_list *argtypes, struct expression_list *head)
+int evaluate_arguments(struct symbol *fn, struct symbol_list *argtypes,
+		       struct expression_list *head)
 {
 	struct expression *expr;
 	struct symbol *argtype;
@@ -2385,6 +2387,8 @@ int evaluate_arguments(struct symbol_list *argtypes, struct expression_list *hea
 		NEXT_PTR_LIST(argtype);
 	} END_FOR_EACH_PTR(expr);
 	FINISH_PTR_LIST(argtype);
+
+	verify_format_attribute(fn, head);
 	return 1;
 }
 
@@ -3208,7 +3212,7 @@ static struct symbol *evaluate_call(struct expression *expr)
 		if (!sym->op->args(expr))
 			return NULL;
 	} else {
-		if (!evaluate_arguments(ctype->arguments, arglist))
+		if (!evaluate_arguments(ctype, ctype->arguments, arglist))
 			return NULL;
 		args = expression_list_size(expr->args);
 		fnargs = symbol_list_size(ctype->arguments);

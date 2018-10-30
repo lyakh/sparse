@@ -396,7 +396,7 @@ static int eval_sync_compare_and_swap(struct expression *expr)
 
 	if (!expr->ctype)	// __sync_val_compare_and_swap()
 		expr->ctype = ctype;
-	return evaluate_arguments(types, expr->args);
+	return evaluate_arguments(NULL, types, expr->args);
 
 err:
 	sparse_error(arg->pos, "invalid type for argument %d:", n);

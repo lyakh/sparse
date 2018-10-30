@@ -10,7 +10,6 @@ static int test(void) {
 /*
  * check-name: variadic formatting test prefix based __attribute__
  * check-command: sparse -Wformat $file
- * check-known-to-fail
  *
  * check-error-start
 varargs-format-prefix.c:7:26: warning: incorrect type in argument 2 (different address spaces)

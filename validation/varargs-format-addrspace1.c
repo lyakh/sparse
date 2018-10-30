@@ -18,7 +18,6 @@ static void test(void) {
 /*
  * check-name: variadic formatting test with address-space to %s
  * check-command: sparse -Wformat $file
- * check-known-to-fail
  *
  * check-error-start
 varargs-format-addrspace1.c:10:26: warning: incorrect type in argument 2 (different address spaces)

@@ -28,8 +28,17 @@ void evaluate_symbol_list(struct symbol_list *list);
 
 ///
 // evaluate the arguments of a function
+// @fn: the symbol of the prototype
 // @argtypes: the list of the types in the prototype
 // @args: the list of the effective arguments
-int evaluate_arguments(struct symbol_list *argtypes, struct expression_list *args);
+int evaluate_arguments(struct symbol *fn, struct symbol_list *argtypes, struct expression_list *args);
+
+///
+// check if assignment types are compatible
+// @target: the type of the right-hand side
+// @rp: the expression corresponding to the left-hand side
+// @typediff: a pointer for details about the type difference, if any
+// @return: a non-zero value of the types are compatible, 0 otherwise
+int check_assignment_types(struct symbol *target, struct expression **rp, const char **typediff);
 
 #endif
