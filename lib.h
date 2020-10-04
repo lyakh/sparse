@@ -199,6 +199,11 @@ static inline struct expression *first_expression(struct expression_list *head)
 	return first_ptr_list((struct ptr_list *)head);
 }
 
+static inline struct expression *get_nth_expression(struct expression_list *head, unsigned int n)
+{
+	return ptr_list_nth_entry((struct ptr_list *)head, n);
+}
+
 static inline pseudo_t first_pseudo(struct pseudo_list *head)
 {
 	return first_ptr_list((struct ptr_list *)head);
